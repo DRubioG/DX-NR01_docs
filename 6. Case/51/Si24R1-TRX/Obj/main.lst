@@ -1,0 +1,53 @@
+C51 COMPILER V9.54   MAIN                                                                  11/15/2024 11:11:27 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Obj\main.obj
+COMPILER INVOKED BY: D:\Keil5 51\C51\BIN\C51.EXE User\main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\App\Si24R1;.\Public) DEBU
+                    -G OBJECTEXTEND PRINT(.\Obj\main.lst) TABS(2) OBJECT(.\Obj\main.obj)
+
+line level    source
+
+   1          /**@file            main.c
+   2          * @brief            Main program entry
+   3          * @author           oyz
+   4          * @date             2024.10.22
+   5          * @version          1.0
+   6          * @copyright        Shenzhen DX-SMART Technology Co.Ltd
+   7          **********************************************************************************
+   8          */
+   9          #include "Si24R1.h"
+  10          #include "uart.h"
+  11          
+  12          
+  13          
+  14          
+  15          
+  16          /*******************************************************************************
+  17          * 函 数 名       : main
+  18          * 函数功能     : 主函数
+  19          * 输    入       : 无
+  20          * 输    出       : 无
+  21          *******************************************************************************/
+  22          void main()
+  23          { 
+  24   1        
+  25   1        //unsigned char u[32]={"helllo"};
+  26   1        UART_Init();
+  27   1        RF_RX_Init();
+  28   1        APP_Process();
+  29   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =      9    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,72 @@
+C51 COMPILER V9.54   MAIN                                                                  12/13/2024 15:01:19 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Obj\main.obj
+COMPILER INVOKED BY: D:\Keil5 51\C51\BIN\C51.EXE User\main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\App\Si24R1;.\Public) DEBU
+                    -G OBJECTEXTEND PRINT(.\Obj\main.lst) TABS(2) OBJECT(.\Obj\main.obj)
+
+line level    source
+
+   1          /**@file            main.c
+   2          * @brief            Main program entry
+   3          * @author           oyz
+   4          * @date             2024.10.22
+   5          * @version          1.0
+   6          * @copyright        Shenzhen DX-SMART Technology Co.Ltd
+   7          **********************************************************************************
+   8          */
+   9          #include "Si24R1.h"
+  10          #include "uart.h"
+  11          
+  12          
+  13          
+  14          
+  15          
+  16          /*******************************************************************************
+  17          * 函 数 名       : main
+  18          * 函数功能     : 主函数
+  19          * 输    入       : 无
+  20          * 输    出       : 无
+  21          *******************************************************************************/
+  22          void main()
+  23          { 
+  24   1        
+  25   1        unsigned char u[32]={0};
+  26   1        UART_Init();
+  27   1        RF_RX_Init();
+  28   1        while(1)
+  29   1        {
+  30   2          
+  31   2          if(Si24R1_RxPacket(u) ==0)
+  32   2          {
+  33   3      
+  34   3            UART_SendString(u);
+  35   3            
+  36   3            
+  37   3            
+  38   3        
+  39   3          }
+  40   2          
+  41   2      
+  42   2      
+  43   2          
+  44   2        
+  45   2        }
+  46   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     47    ----
+   CONSTANT SIZE    =     32    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      32
+C51 COMPILER V9.54   MAIN                                                                  12/13/2024 15:01:19 PAGE 2   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

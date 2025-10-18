@@ -1,0 +1,101 @@
+; stlink_winusb.inf
+; Installation INF for the STMicroelectronics STLINK for Windows XP SP2 or later.
+; CoInstallers (WdfCoInstaller01009.dll and WinUSBCoInstaller2.dll) must have been
+; previously installed into %Windir%/System32. Caution: there is one version of
+; coInstallers for x86 and one for x64 machines.
+;
+
+[Version]
+DriverVer=07/28/2010
+Signature="$CHICAGO$"
+Class=USB
+ClassGUID={36FC9E60-C465-11CF-8056-444553540000}
+provider="STMicroelectronics"
+
+[Manufacturer]
+%MfgName%=USBDevices,NTx86,NTamd64
+
+[USBDevices.NTx86]
+%VID_0483&PID_3748.DeviceDesc%=USB_Install, USB\VID_0483&PID_3748
+
+[USBDevices.NTamd64]
+%VID_0483&PID_3748.DeviceDesc%=USB_Install, USB\VID_0483&PID_3748
+
+[USB_Install]
+Include=winusb.inf
+Needs=WINUSB.NT
+
+[USB_Install.Services]
+Include=winusb.inf
+Addservice = WinUSB, 0x00000002, WinUSB_ServiceInstall
+
+[WinUSB_ServiceInstall]
+DisplayName    = %WinUSB_SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\WinUSB.sys
+
+[USB_Install.Wdf]
+KmdfService=WINUSB, WinUsb_Install
+
+[WinUsb_Install]
+KmdfLibraryVersion=1.9
+
+[USB_Install.HW]
+AddReg=Dev_AddReg
+
+[Dev_AddReg]
+HKR,,DeviceInterfaceGUIDs,0x10000,%STLink_GUID%
+
+[USB_Install.CoInstallers]
+AddReg=CoInstallers_AddReg
+;Modification from Microsoft's template: CoInstallers are installed externally and previously,
+;instead of installed from an external disk.
+%11%/WinUSBCoInstaller2.dll
+%11%/WdfCoInstaller01009.dll
+;CopyFiles=CoInstallers_CopyFiles
+
+[CoInstallers_AddReg]
+HKR,,CoInstallers32,0x00010000,"WdfCoInstaller01009.dll,WdfCoInstaller","WinUSBCoInstaller2.dll"
+
+;[CoInstallers_CopyFiles]
+;WinUSBCoInstaller2.dll
+;WdfCoInstaller01009.dll
+
+;[DestinationDirs]
+;CoInstallers_CopyFiles=11
+
+; ================= Source Media Section =====================
+
+;[SourceDisksNames]
+;1 = %DISK_NAME%,,,\i386
+;2 = %DISK_NAME%,,,\amd64
+;3 = %DISK_NAME%,,,\ia64
+
+;[SourceDisksFiles.x86]
+;WinUSBCoInstaller2.dll=1
+;WdfCoInstaller01009.dll=1
+
+;[SourceDisksFiles.NTamd64]
+;WinUSBCoInstaller2.dll=2
+;WdfCoInstaller01009.dll=2
+
+;[SourceDisksFiles.ia64]
+;WinUSBCoInstaller2.dll=3
+;WdfCoInstaller01009.dll=3
+
+;------------------------------------------------------------;
+
+[Strings]
+MfgName="STMicroelectronics"
+VID_0483&PID_3748.DeviceDesc="STMicroelectronics STLink dongle"
+WinUSB_SvcDesc="WinUSB Driver for STLink"
+;DISK_NAME="C:\TEMP\installStlinkWinusb"
+
+
+;------------Replace GUID below with custom GUID-------------;
+
+STLink_GUID="{DBCE1CD9-A320-4b51-A365-A0C3F3C5FB29}"
+
+;------------------------------------------------------------;

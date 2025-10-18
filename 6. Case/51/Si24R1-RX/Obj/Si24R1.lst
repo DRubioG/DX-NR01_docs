@@ -1,0 +1,307 @@
+C51 COMPILER V9.54   SI24R1                                                                12/13/2024 15:01:19 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SI24R1
+OBJECT MODULE PLACED IN .\Obj\Si24R1.obj
+COMPILER INVOKED BY: D:\Keil5 51\C51\BIN\C51.EXE App\Si24R1\Si24R1.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\App\Si24R1;.\Publ
+                    -ic) DEBUG OBJECTEXTEND PRINT(.\Obj\Si24R1.lst) TABS(2) OBJECT(.\Obj\Si24R1.obj)
+
+line level    source
+
+   1          /**@file        si24r1.c
+   2          * @brief           si24r1 low level operations and configurations.
+   3          * @author           oyz
+   4          * @date             2024.10.22
+   5          * @version          1.0
+   6          * @copyright        Shenzhen DX-SMART Technology Co.Ltd
+   7          **********************************************************************************
+   8          */
+   9          #include "Si24R1.h"
+  10          #include <intrins.h>
+  11          #include <string.h>
+  12          
+  13          uchar const TX_ADDRESS[TX_ADDR_WIDTH]={0x01,0x02,0x03,0x04,0x05};
+  14          uchar const RX_ADDRESS[RX_ADDR_WIDTH]={0x01,0x02,0x03,0x04,0x05};
+  15          
+  16          idata unsigned char rx_buf[R_RX_PAYLOAD_WIDTH];
+  17          
+  18          idata unsigned char tx_buf[W_RX_PAYLOAD_WIDTH];
+  19          
+  20          //uchar flag;
+  21          sbit LED = P1^0;
+  22          
+  23          uchar bdata sta;
+  24          //uchar DATA = 0x01;
+  25          
+  26          
+  27          //sbit  RX_DR     = sta^6;
+  28          //sbit  TX_DS     = sta^5;
+  29          //sbit  MAX_RT    = sta^4;
+  30          
+  31          //Si24R1 模块引脚位定义
+  32          sbit CE  =  P1^2;
+  33          sbit CSN =  P1^3;
+  34          sbit SCK =  P1^7;
+  35          sbit MOSI= P1^5;
+  36          sbit MISO= P1^6;
+  37          sbit IRQ = P1^4;
+  38          
+  39          
+  40          //初始化IO口，软件SPI
+  41          void init_io(void)
+  42          {
+  43   1          CE  = 0;        // 待机
+  44   1          CSN = 1;        // SPI传输结束
+  45   1          SCK = 0;        // SPI时钟置低
+  46   1          IRQ = 1;        // 中断
+  47   1          LED = 0;        // 关闭指示灯
+  48   1      }
+  49          
+  50          
+  51          uchar SW_SPI_ReadWriteByte(uchar byte)
+  52          {
+  53   1          uchar   bit_ctr;
+  54   1          // output 8-bits
+C51 COMPILER V9.54   SI24R1                                                                12/13/2024 15:01:19 PAGE 2   
+
+  55   1          for (bit_ctr = 0; bit_ctr < 8; bit_ctr++)
+  56   1          {
+  57   2              MOSI = (byte & 0x80);   // output 'byte' MSB to MOSI
+  58   2              byte = (byte << 1);     // shift next bit into MSB..
+  59   2              SCK = 1;                // Set SCK high.. 24R1 read 1-bit from MOSI and output 1-bit to MISO 
+  60   2              byte |= MISO;           // capture current MISO bit 
+  61   2              SCK = 0;                // ..then set SCK low again
+  62   2          }
+  63   1      
+  64   1          return (byte);  // return read byte
+  65   1      }
+  66          
+  67          //Si24R1写寄存器
+  68          //SPI写寄存器
+  69          //reg:指定寄存器地址
+  70          //value:写入的值
+  71          uchar Si24R1_Write_Reg(uchar reg,uchar value)
+  72          {
+  73   1        uchar status;
+  74   1        CSN=0;      //使能SPI传输
+  75   1        status=SW_SPI_ReadWriteByte(reg);   //读取寄存器内容
+  76   1        SW_SPI_ReadWriteByte(value);  //写入寄存器的值
+  77   1        CSN=1;     //SPI传输结束
+  78   1      
+  79   1        return(status);             //返回状态值
+  80   1      }
+  81          
+  82          
+  83          //Si24R1读寄存器
+  84          //SPI写寄存器
+  85          //reg:指定寄存器地址
+  86          //value:写入的值
+  87          uchar Si24R1_Read_Reg(uchar reg)
+  88          {
+  89   1        uchar reg_val;
+  90   1        CSN=0;      //使能SPI传输
+  91   1        SW_SPI_ReadWriteByte(reg);  //写入寄存器的值
+  92   1        reg_val=SW_SPI_ReadWriteByte(NOP);  //空操作，用来读取状态寄存器
+  93   1        CSN=1;     //SPI传输结束
+  94   1      
+  95   1        return reg_val;             //返回状态值
+  96   1      }
+  97          
+  98          
+  99          
+ 100          //Si24R1写数据
+ 101          //reg:寄存器(位置)
+ 102          //*pBuf:数据指针
+ 103          //len:数据长度
+ 104          //返回值,此次读到的状态寄存器值
+ 105          uchar Si24R1_Write_Buf(uchar reg, uchar *pBuf, uchar len)
+ 106          {
+ 107   1      
+ 108   1        uchar status,ctr;
+ 109   1        CSN=0;             //使能SPI传输          
+ 110   1        status=SW_SPI_ReadWriteByte(reg); //发送寄存器值(位置),并读取状态值
+ 111   1        for(ctr=0;ctr<len;ctr++)
+ 112   1        {
+ 113   2          SW_SPI_ReadWriteByte(*pBuf++);  //写入数据   
+ 114   2        
+ 115   2        
+ 116   2        }
+C51 COMPILER V9.54   SI24R1                                                                12/13/2024 15:01:19 PAGE 3   
+
+ 117   1        CSN=1;            //SPI传输结束
+ 118   1        return(status);             //返回状态值
+ 119   1      }
+ 120          
+ 121          
+ 122          //Si24R1读数据
+ 123          //reg:寄存器(位置)
+ 124          //*pBuf:数据指针
+ 125          //len:数据长度
+ 126          //返回值,此次读到的状态寄存器值
+ 127          uchar Si24R1_Read_Buf(uchar reg, uchar *pBuf, uchar len)
+ 128          {
+ 129   1        uchar status,u8_ctr;
+ 130   1        CSN=0;  
+ 131   1        status=SW_SPI_ReadWriteByte(reg);
+ 132   1        for(u8_ctr=0;u8_ctr<len;u8_ctr++)
+ 133   1        {
+ 134   2          pBuf[u8_ctr]=SW_SPI_ReadWriteByte(0xff);  //读数据   
+ 135   2        
+ 136   2        
+ 137   2        }
+ 138   1        CSN=1;            //SPI传输结束
+ 139   1        return status;            //返回状态值
+ 140   1      
+ 141   1      }
+ 142          
+ 143          
+ 144          
+ 145          
+ 146          //启动Si24R1发送一次数据
+ 147          //txbuf:待发送数据首地址
+ 148          //返回值:发送完成状况
+ 149          uchar Si24R1_TxPacket(uchar *txbuf)
+ 150          {
+ 151   1        uchar sta;
+ 152   1        CE=0;
+ 153   1        Si24R1_Write_Buf(WR_TX_PLOAD,txbuf,W_RX_PAYLOAD_WIDTH); //写数据到TX BUF  32个字节
+ 154   1        CE=1;
+ 155   1          
+ 156   1        while(IRQ!=0);                           //数据发送完成中断
+ 157   1        sta=Si24R1_Read_Reg(STATUS);           //读取状态寄存器的值
+ 158   1        Si24R1_Write_Reg(NRF_WRITE_REG+STATUS,sta);     //清除TX_DS或MAX_RT中断标志
+ 159   1        if(sta&MAX_TX)                    //达到最大重发次数
+ 160   1        {
+ 161   2          Si24R1_Write_Reg(FLUSH_TX,0xff);    //清除TX FIFO寄存器 
+ 162   2          return 2; 
+ 163   2        
+ 164   2        }
+ 165   1        
+ 166   1        if(sta&TX_OK)                     //发送完成
+ 167   1        {
+ 168   2      
+ 169   2          return 1;
+ 170   2        }
+ 171   1        
+ 172   1        return 0;                       //其他原因发送失败
+ 173   1      }
+ 174          
+ 175          
+ 176          //Si24R1接收一次数据
+ 177          //rxbuf:Si24R1接收一次数据
+ 178          //返回值:0，接收完成；其他，错误代码
+C51 COMPILER V9.54   SI24R1                                                                12/13/2024 15:01:19 PAGE 4   
+
+ 179          uchar Si24R1_RxPacket(uchar *rxbuf)
+ 180          {
+ 181   1        uchar sta;                         
+ 182   1         
+ 183   1        sta=Si24R1_Read_Reg(STATUS);  //读取状态寄存器的值       
+ 184   1        Si24R1_Write_Reg(NRF_WRITE_REG+STATUS,sta); //清除TX_DS或MAX_RT中断标志
+ 185   1        if(sta&RX_OK)//接收到数据
+ 186   1        {
+ 187   2          
+ 188   2          Si24R1_Read_Buf(RD_RX_PLOAD,rxbuf,R_RX_PAYLOAD_WIDTH);//读取数据
+ 189   2          
+ 190   2          Si24R1_Write_Reg(FLUSH_RX,0xff);//清除RX FIFO寄存器 
+ 191   2          return 0; 
+ 192   2        }    
+ 193   1        return 1;//没收到任何数据
+ 194   1      }   
+ 195          
+ 196          //设置Si24R1为TX模式
+ 197          void Si24R1_TX_Mode(void)
+ 198          {
+ 199   1      
+ 200   1        CE=0;
+ 201   1        Si24R1_Write_Reg(NRF_WRITE_REG+CONFIG,0x0e);
+ 202   1          Si24R1_Write_Reg(FLUSH_RX,0xff);
+ 203   1        Si24R1_Write_Reg(FLUSH_TX,0xff);
+ 204   1        CE=1;
+ 205   1      
+ 206   1      }
+ 207          
+ 208          
+ 209          //设置Si24R1为RX模式
+ 210          void Si24R1_RX_Mode(void)
+ 211          {
+ 212   1      
+ 213   1        CE=0;
+ 214   1        Si24R1_Write_Reg(NRF_WRITE_REG+CONFIG,0x0f);
+ 215   1          Si24R1_Write_Reg(FLUSH_RX,0xff);
+ 216   1        Si24R1_Write_Reg(FLUSH_TX,0xff);
+ 217   1        CE=1;
+ 218   1      
+ 219   1      }
+ 220          
+ 221          //Si24R1检测函数
+ 222          uchar Si24R1_Check(void)
+ 223          {
+ 224   1        uchar check_in_data[5]={0X55,0XAA,0X55,0XAA,0X55};
+ 225   1        uchar check_out_data[5]={0x00};
+ 226   1        
+ 227   1        CE=0;
+ 228   1        Si24R1_Write_Buf(NRF_WRITE_REG+TX_ADDR,check_in_data,5);
+ 229   1        Si24R1_Read_Buf(NRF_READ_REG+TX_ADDR,check_out_data,5);
+ 230   1        if( (check_out_data[0]==0x55)&&
+ 231   1          (check_out_data[1]==0xAA)&&
+ 232   1          (check_out_data[2]==0x55)&&
+ 233   1          (check_out_data[3]==0xAA)&&
+ 234   1          (check_out_data[4]==0x55))
+ 235   1          return 0;
+ 236   1        else
+ 237   1          return 1;
+ 238   1      }
+ 239          
+ 240          
+C51 COMPILER V9.54   SI24R1                                                                12/13/2024 15:01:19 PAGE 5   
+
+ 241          //Si24R1初始化函数
+ 242          void Si24R1_Init(void)
+ 243          {
+ 244   1        while(Si24R1_Check())
+ 245   1        {
+ 246   2          printf("No Si24R1 Error\r\n");
+ 247   2          //delay_ms(50);
+ 248   2        }
+ 249   1        
+ 250   1        
+ 251   1        CE=0;
+ 252   1        Si24R1_Write_Reg(NRF_WRITE_REG+RX_PW_P0,R_RX_PAYLOAD_WIDTH);        //选择通道0的有效数据宽度       
+ 253   1        Si24R1_Write_Buf(NRF_WRITE_REG+TX_ADDR,(uchar*)TX_ADDRESS,TX_ADDR_WIDTH);   //写TX节点地址 
+ 254   1        Si24R1_Write_Buf(NRF_WRITE_REG+RX_ADDR_P0,(uchar*)RX_ADDRESS,RX_ADDR_WIDTH);  //写 Rx 节点的地址（主要是为
+             -了使能 Auto Ack）
+ 255   1        Si24R1_Write_Reg(NRF_WRITE_REG+EN_AA,0x01);     //使能 AUTO ACK EN_AA  开启自动应答
+ 256   1        Si24R1_Write_Reg(NRF_WRITE_REG+EN_RXADDR,0x01);   //使能通道0的接收地址  
+ 257   1        Si24R1_Write_Reg(NRF_WRITE_REG+SETUP_RETR,0x03);  //250us重发延时，自动重发3次
+ 258   1        Si24R1_Write_Reg(NRF_WRITE_REG+RF_CH,2);           //2402MHZ
+ 259   1        Si24R1_Write_Reg(NRF_WRITE_REG+RF_SETUP,0x0f);    //2Mbps,7dbm
+ 260   1        Si24R1_Write_Reg(NRF_WRITE_REG+CONFIG,0x0f);     //配置基本工作模式的参数;PWR_UP,EN_CRC,16BIT_CRC,接收模式,
+             -开启所有中断
+ 261   1        delay_ms(20);
+ 262   1        CE=1;
+ 263   1        
+ 264   1      }
+ 265          
+ 266          
+ 267          void RF_RX_Init(void)
+ 268          {
+ 269   1        
+ 270   1        init_io();
+ 271   1        Si24R1_Init();
+ 272   1        Si24R1_RX_Mode();
+ 273   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    505    ----
+   CONSTANT SIZE    =     28    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     11      23
+   IDATA SIZE       =     64    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

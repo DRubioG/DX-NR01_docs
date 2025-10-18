@@ -1,0 +1,27 @@
+C51 COMPILER V9.54   SPI                                                                   11/20/2024 11:08:47 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SPI
+OBJECT MODULE PLACED IN .\Obj\spi.obj
+COMPILER INVOKED BY: D:\Keil5 51\C51\BIN\C51.EXE Public\spi.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\App\Si24R1;.\Public) DEB
+                    -UG OBJECTEXTEND PRINT(.\Obj\spi.lst) TABS(2) OBJECT(.\Obj\spi.obj)
+
+line level    source
+
+   1          #include "spi.h"
+   2          
+   3          //LEDΩ≈Œª∂®“Â
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
